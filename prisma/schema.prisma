@@ -1,0 +1,520 @@
+// Prisma schema for Computer Institute Management System
+// PostgreSQL Database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===== ADMIN USERS =====
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique @db.VarChar(255)
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([username])
+  @@index([email])
+}
+
+// ===== SETTINGS =====
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique @db.VarChar(255)
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+// ===== COURSES =====
+model Course {
+  id                String   @id @default(cuid())
+  name              String   @unique @db.VarChar(255)
+  shortName         String   @db.VarChar(100)
+  durationMonths    Int
+  registrationFee   Float    @default(0)
+  courseFee         Float    @default(0)
+  zone              String   @db.VarChar(100)
+  hasMarksheet      Boolean  @default(true)
+  hasCertificate    Boolean  @default(true)
+  subjects          Json     @default("[]")
+  status            String   @default("active") @db.VarChar(50)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  students   AtcStudent[]
+  marksheets Marksheet[]
+  certificates Certificate[]
+
+  @@index([zone])
+  @@index([status])
+}
+
+// ===== COURSE ENQUIRIES =====
+model CourseEnquiry {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(255)
+  email     String?  @db.VarChar(255)
+  mobile    String   @db.VarChar(20)
+  courseId  String?
+  courseName String  @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mobile])
+  @@index([createdAt])
+}
+
+// ===== ATC APPLICATION =====
+model AtcApplication {
+  id                        String   @id @default(cuid())
+  processFee                String   @db.Text
+  affiliationPlanYear       Int?
+  feeCalculation            Json?
+  trainingPartnerName       String   @db.VarChar(255)
+  trainingPartnerAddress    String   @db.Text
+  postalAddressOffice       String?  @db.Text
+  totalName                 String?  @db.VarChar(255)
+  district                  String   @db.VarChar(100)
+  state                     String   @db.VarChar(100)
+  pin                       String   @db.VarChar(20)
+  country                   String   @default("INDIA") @db.VarChar(50)
+  mobile                    String   @db.VarChar(20)
+  email                     String   @unique @db.VarChar(255)
+  statusOfInstitution       String   @db.VarChar(100)
+  yearOfEstablishment       String   @db.VarChar(4)
+  chiefName                 String   @db.VarChar(255)
+  designation               String   @db.VarChar(100)
+  educationQualification    String   @db.Text
+  professionalExperience    String   @db.Text
+  dob                       String   @db.VarChar(10)
+  photo                     String?  @db.Text
+  logo                      String?  @db.Text
+  signature                 String?  @db.Text
+  aadharDoc                 String?  @db.Text
+  aadharNo                  String?  @db.VarChar(20)
+  marksheetDoc              String?  @db.Text
+  otherDocs                 String?  @db.Text
+  paymentMode               String   @db.VarChar(50)
+  paymentScreenshot         String?  @db.Text
+  instituteDocument         String?  @db.Text
+  infrastructure            String   @default("{}") @db.Text
+  zones                     String[] @db.Text
+  paidAmount                String?  @db.Text
+  transactionNo             String?  @db.VarChar(100)
+  status                    String   @default("pending") @db.VarChar(50)
+  tpCode                    String?  @unique @db.VarChar(50)
+  submittedByAdmin          Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  // Relations
+  atcUser AtcUser?
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// ===== ATC USERS (Training Partners) =====
+model AtcUser {
+  id                   String   @id @default(cuid())
+  tpCode               String   @unique @db.VarChar(50)
+  trainingPartnerName  String   @db.VarChar(255)
+  email                String   @unique @db.VarChar(255)
+  mobile               String   @db.VarChar(20)
+  password             String
+  applicationId        String?  @unique
+  zones                String[] @db.Text
+  walletBalance        Float    @default(0)
+  status               String   @default("active") @db.VarChar(50)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  application         AtcApplication? @relation(fields: [applicationId], references: [id])
+  students            AtcStudent[]
+  studentExams        StudentExam[]
+  marksheets          Marksheet[]
+  certificates        Certificate[]
+  centerSetAssignments CenterSetAssignment[]
+  questionSets        QuestionSet[]
+  walletRequests      WalletRequest[]
+  walletTransactions  WalletTransaction[]
+  studyMaterials      StudyMaterial[]
+
+  @@index([tpCode])
+  @@index([status])
+  @@index([email])
+}
+
+// ===== STUDENTS =====
+model AtcStudent {
+  id                     String   @id @default(cuid())
+  atcId                  String
+  tpCode                 String   @db.VarChar(50)
+  enrollmentNo           String?  @unique @db.VarChar(50)
+  registrationNo         String?  @unique @db.VarChar(50)
+  name                   String   @db.VarChar(255)
+  fatherName             String   @db.VarChar(255)
+  motherName             String   @db.VarChar(255)
+  dob                    String   @db.VarChar(10)
+  gender                 String   @db.VarChar(20)
+  mobile                 String   @db.VarChar(20)
+  parentsMobile          String?  @db.VarChar(20)
+  email                  String   @default("") @db.VarChar(255)
+  currentAddress         String   @db.Text
+  permanentAddress       String   @db.Text
+  course                 String   @db.VarChar(255)
+  courseId               String?
+  courseType             String   @default("Regular") @db.VarChar(50)
+  session                String   @db.VarChar(50)
+  classRollNo            String?  @db.VarChar(50)
+  nationality            String   @default("Indian") @db.VarChar(50)
+  category               String   @db.VarChar(50)
+  maritalStatus          String?  @db.VarChar(50)
+  religion               String?  @db.VarChar(50)
+  disability             Boolean  @default(false)
+  disabilityDetails      String?  @db.Text
+  admissionFees          String   @db.VarChar(100)
+  highestQualification   String   @default("") @db.VarChar(255)
+  qualSchool             String   @default("") @db.VarChar(255)
+  qualSchoolOther        String   @default("") @db.VarChar(255)
+  qualYearPassing        String   @default("") @db.VarChar(4)
+  qualPercentObtained    String   @default("") @db.VarChar(10)
+  credentialEntries      String   @default("") @db.Text
+  qualificationDoc       String?  @db.Text
+  photo                  String?  @db.Text
+  idProof                String?  @db.Text
+  aadharNo               String?  @db.VarChar(20)
+  aadharDoc              String?  @db.Text
+  studentSignature       String?  @db.Text
+  otherDocs              String?  @db.Text
+  marksheet12th          String?  @db.Text
+  graduationDoc          String?  @db.Text
+  highestQualDoc         String?  @db.Text
+  referredBy             String?  @db.Text
+  admissionDate          String   @db.VarChar(10)
+  password               String?
+  status                 String   @default("pending") @db.VarChar(50)
+  userStatus             String   @default("active") @db.VarChar(50)
+  offlineExamStatus      String   @default("not_appeared") @db.VarChar(50)
+  offlineExamMarks       String   @default("") @db.Text
+  offlineExamResult      String   @default("Waiting") @db.VarChar(50)
+  offlineExamCopy        String?  @db.Text
+  examMode               String   @default("online") @db.VarChar(50)
+  totalFee               Float    @default(0)
+  paidAmount             Float    @default(0)
+  duesAmount             Float    @default(0)
+  isDirectAdmission      Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  // Relations
+  atcUser        AtcUser     @relation(fields: [atcId], references: [id], onDelete: Cascade)
+  courseRef      Course?     @relation(fields: [courseId], references: [id])
+  studentExams   StudentExam[]
+  marksheets     Marksheet[]
+  certificates   Certificate[]
+  feeTransactions FeeTransaction[]
+  studentMedia   StudentMedia[]
+  walletTransactions WalletTransaction[]
+
+  @@index([atcId, status])
+  @@index([atcId, userStatus])
+  @@index([atcId, createdAt])
+  @@index([enrollmentNo])
+  @@index([registrationNo])
+}
+
+// ===== QUESTION SETS =====
+model QuestionSet {
+  id              String   @id @default(cuid())
+  atcId           String?
+  title           String   @db.VarChar(255)
+  description     String   @default("") @db.Text
+  questionCount   Int      @default(100)
+  durationMinutes Int      @default(120)
+  totalMarks      Int      @default(100)
+  examMode        String   @default("both") @db.VarChar(50)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  atcUser        AtcUser?     @relation(fields: [atcId], references: [id], onDelete: SetNull)
+  examQuestions  ExamQuestion[]
+  studentExams   StudentExam[]
+
+  @@index([atcId])
+  @@index([isActive])
+}
+
+// ===== EXAM QUESTIONS =====
+model ExamQuestion {
+  id            String   @id @default(cuid())
+  setId         String
+  questionText  String   @db.Text
+  options       String[] @db.Text
+  correctOption String   @db.Text
+  marks         Int      @default(1)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  questionSet QuestionSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+
+  @@index([setId])
+  @@index([isActive])
+}
+
+// ===== CENTER SET ASSIGNMENTS =====
+model CenterSetAssignment {
+  id        String   @id @default(cuid())
+  atcId     String
+  tpCode    String   @db.VarChar(50)
+  setIds    String[] @db.Text
+  examDate  String?  @db.VarChar(10)
+  notes     String   @default("") @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  atcUser AtcUser @relation(fields: [atcId], references: [id], onDelete: Cascade)
+
+  @@index([atcId])
+  @@index([examDate])
+}
+
+// ===== STUDENT EXAMS =====
+model StudentExam {
+  id                  String   @id @default(cuid())
+  studentId           String
+  atcId               String
+  setId               String?
+  examMode            String   @db.VarChar(50)
+  offlinePreferredDate String? @db.VarChar(10)
+  offlinePreferredCenter String? @db.VarChar(255)
+  offlinePreferredTimeSlot String? @db.VarChar(50)
+  approvalStatus      String   @default("none") @db.VarChar(50)
+  admitCardReleased   Boolean  @default(false)
+  examDate            DateTime?
+  examTime            String?  @db.VarChar(10)
+  examDateTime        DateTime?
+  durationMinutes     Int      @default(60) @db.SmallInt
+  lifecycleStatus     String   @default("upcoming") @db.VarChar(50)
+  status              String   @default("pending") @db.VarChar(50)
+  startedAt           DateTime?
+  submittedAt         DateTime?
+  answers             Json     @default("[]")
+  totalScore          Float    @default(0)
+  maxScore            Float    @default(100)
+  resultDeclared      Boolean  @default(false)
+  grade               String?  @db.VarChar(50)
+  session             String?  @db.VarChar(50)
+  offlineExamStatus   String   @default("not_appeared") @db.VarChar(50)
+  offlineExamResult   String   @default("Waiting") @db.VarChar(50)
+  offlineExamCopy     String?  @db.Text
+  marksheetReleased   Boolean  @default(false)
+  certificateReleased Boolean  @default(false)
+  subjectMarks        Json     @default("[]")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  student     AtcStudent  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  atcUser     AtcUser     @relation(fields: [atcId], references: [id])
+  questionSet QuestionSet? @relation(fields: [setId], references: [id], onDelete: SetNull)
+  marksheets  Marksheet[]
+  certificates Certificate[]
+
+  @@index([studentId])
+  @@index([atcId])
+  @@index([setId])
+  @@index([lifecycleStatus])
+}
+
+// ===== MARKSHEETS =====
+model Marksheet {
+  id            String   @id @default(cuid())
+  studentId     String
+  atcId         String
+  examId        String
+  courseId      String?
+  enrollmentNo  String   @db.VarChar(50)
+  rollNo        String   @db.VarChar(50)
+  courseName    String   @db.VarChar(255)
+  subjects      Json     @default("[]")
+  totalObtained Float
+  totalMax      Float
+  percentage    Float
+  grade         String   @db.VarChar(50)
+  result        String   @db.VarChar(20)
+  issueDate     DateTime @default(now())
+  isApproved    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  student   AtcStudent  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  atcUser   AtcUser     @relation(fields: [atcId], references: [id])
+  course    Course?     @relation(fields: [courseId], references: [id])
+  exam      StudentExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([atcId])
+  @@index([enrollmentNo])
+  @@index([isApproved])
+}
+
+// ===== CERTIFICATES =====
+model Certificate {
+  id             String   @id @default(cuid())
+  studentId      String
+  atcId          String
+  examId         String
+  courseId       String?
+  enrollmentNo   String   @db.VarChar(50)
+  serialNo       String   @unique @db.VarChar(100)
+  issueDate      DateTime @default(now())
+  session        String   @db.VarChar(50)
+  courseName     String   @db.VarChar(255)
+  centerCode     String   @db.VarChar(50)
+  centerName     String   @db.VarChar(255)
+  grade          String   @db.VarChar(50)
+  fromLabel      String?  @db.VarChar(50)
+  durationMonths Int
+  isApproved     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  student AtcStudent  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  atcUser AtcUser     @relation(fields: [atcId], references: [id])
+  course  Course?     @relation(fields: [courseId], references: [id])
+  exam    StudentExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([atcId])
+  @@index([serialNo])
+  @@index([isApproved])
+}
+
+// ===== FEE TRANSACTIONS =====
+model FeeTransaction {
+  id                    String   @id @default(cuid())
+  studentId             String
+  date                  DateTime
+  receiptNo             String   @unique @db.VarChar(100)
+  paidFor               String   @db.Text
+  paymentMode           String   @db.VarChar(50)
+  amount                Float
+  type                  String   @db.VarChar(50)
+  nextInstallmentDate   DateTime?
+  nextInstallmentAmount Float?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  student AtcStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([receiptNo])
+  @@index([date])
+}
+
+// ===== STUDENT MEDIA =====
+model StudentMedia {
+  id        String   @id @default(cuid())
+  studentId String
+  fieldName String   @db.VarChar(255)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  student AtcStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, fieldName])
+  @@index([studentId])
+}
+
+// ===== STUDY MATERIALS =====
+model StudyMaterial {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  category    String   @db.VarChar(255)
+  type        String   @db.VarChar(50)
+  content     String   @db.Text
+  uploadedBy  String   @db.VarChar(50)
+  atcId       String?
+  tpCode      String?  @db.VarChar(50)
+  status      String   @default("active") @db.VarChar(50)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  atcUser AtcUser? @relation(fields: [atcId], references: [id], onDelete: SetNull)
+
+  @@index([uploadedBy])
+  @@index([category])
+  @@index([status])
+  @@index([atcId])
+}
+
+// ===== WALLET REQUESTS =====
+model WalletRequest {
+  id                String   @id @default(cuid())
+  atcId             String
+  tpCode            String   @db.VarChar(50)
+  amount            Float
+  transactionId     String   @db.VarChar(100)
+  paymentDate       DateTime?
+  paymentScreenshot String   @db.Text
+  paymentNote       String   @default("") @db.Text
+  approvedAmount    Float?
+  adminRemark       String   @default("") @db.Text
+  processedAt       DateTime?
+  status            String   @default("pending") @db.VarChar(50)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  atcUser AtcUser @relation(fields: [atcId], references: [id], onDelete: Cascade)
+
+  @@index([atcId, status, createdAt])
+}
+
+// ===== WALLET TRANSACTIONS =====
+model WalletTransaction {
+  id             String   @id @default(cuid())
+  atcId          String
+  tpCode         String   @db.VarChar(50)
+  type           String   @db.VarChar(50)
+  amount         Float
+  reason         String   @db.Text
+  adminRemark    String   @default("") @db.Text
+  requestedAmount Float?
+  studentId      String?
+  studentName    String   @default("") @db.VarChar(255)
+  courseName     String   @default("") @db.VarChar(255)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  atcUser AtcUser     @relation(fields: [atcId], references: [id], onDelete: Cascade)
+  student AtcStudent? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@index([atcId, createdAt])
+  @@index([studentId])
+}

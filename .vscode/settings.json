@@ -1,0 +1,20 @@
+{
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+  "json.schemaDownload.enable": false,
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "/package.json"
+      ],
+      "url": "vscode://schemas/package"
+    },
+    {
+      "fileMatch": [
+        "/eslintrc",
+        "/.eslintrc",
+        "/.eslintrc.json"
+      ],
+      "url": "vscode://schemas/eslintrc"
+    }
+  ]
+}

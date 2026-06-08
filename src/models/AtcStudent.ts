@@ -1,0 +1,1 @@
+export { AtcStudent } from "./Student";
