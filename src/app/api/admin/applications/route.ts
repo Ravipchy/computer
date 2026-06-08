@@ -63,7 +63,7 @@ export async function GET(request: Request) {
     passMap.set(emailKey, u.password);
   });
 
-  const enrichedApps = applications.map((app) => {
+  const enrichedApps = applications.map((app: { id: string; email?: string | null; tpCode?: string | null }) => {
     const emailKey = (app.email ?? "").trim().toLowerCase();
     const appStatus = statusMap.get(app.id) || statusMap.get(emailKey) || "active";
     return {
