@@ -27,8 +27,8 @@ export async function GET() {
       return acc;
     }, {});
 
-    settings.forEach((setting) => {
-      brandData[setting.key] = setting.value;
+    settings.forEach((setting: { key: string; value?: string | null }) => {
+      brandData[setting.key] = setting.value || "";
     });
 
     return NextResponse.json(brandData);
