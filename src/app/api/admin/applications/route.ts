@@ -51,7 +51,7 @@ export async function GET(request: Request) {
   const statusMap = new Map<string, string>();
   const passMap = new Map<string, string>();
 
-  users.forEach((u) => {
+  users.forEach((u: { tpCode?: string; email: string; applicationId?: string | null; status?: string; password?: string }) => {
     if (u.applicationId) {
       tpCodeMap.set(u.applicationId, u.tpCode);
       statusMap.set(u.applicationId, u.status);
