@@ -46,10 +46,10 @@ export async function GET(request: Request) {
     },
   });
 
-  const tpCodeMap = new Map<string, string>();
-  const emailMap = new Map<string, string>();
-  const statusMap = new Map<string, string>();
-  const passMap = new Map<string, string>();
+  const tpCodeMap = new Map<string, string | undefined>();
+  const emailMap = new Map<string, string | undefined>();
+  const statusMap = new Map<string, string | undefined>();
+  const passMap = new Map<string, string | undefined>();
 
   users.forEach((u: { tpCode?: string; email: string; applicationId?: string | null; status?: string; password?: string }) => {
     if (u.applicationId) {
