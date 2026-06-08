@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "create-admin-user": "node scripts/create-user.js",
-    "seed-test-users": "node scripts/seed-test-users.js"
+    "seed-test-users": "node scripts/seed-test-users.js",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
