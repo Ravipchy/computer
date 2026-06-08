@@ -10,7 +10,7 @@ export async function GET() {
       where: { key: { in: BG_KEYS.map(k => `bg_${k}`) } },
     });
     const data: Record<string, string> = { id_front: "", id_back: "", certificate: "", marksheet: "", admit_card: "" };
-    settings.forEach(s => {
+    settings.forEach((s: { key: string; value?: string | null }) => {
       data[s.key.replace("bg_", "")] = s.value || "";
     });
     return NextResponse.json(data);
